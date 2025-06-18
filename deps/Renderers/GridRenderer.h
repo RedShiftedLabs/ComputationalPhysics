@@ -1,6 +1,8 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <algorithm>
+#include <cmath>
 
 class GridRenderer {
 public:
@@ -11,7 +13,7 @@ public:
 
     if (needsUpdate || viewSize != lastViewSize ||
         viewCenter != lastViewCenter) {
-      buildGrid(viewSize, viewCenter);
+      buildGrid(currentView);
       lastViewSize = viewSize;
       lastViewCenter = viewCenter;
       needsUpdate = false;
@@ -28,18 +30,21 @@ private:
   sf::VertexArray primaryLines;
   sf::VertexArray secondaryLines;
   sf::VertexArray axisLines;
+
   sf::Vector2f lastViewSize{0, 0};
   sf::Vector2f lastViewCenter{0, 0};
   bool needsUpdate = true;
 
   const float primaryStep = 100.0F;
   const float secondaryStep = 20.0F;
+  const int primaryLineFactor = 5;
+
   const sf::Color primaryColor{100, 100, 100, 205};
   const sf::Color secondaryColor{60, 60, 60, 155};
   const sf::Color xAxisColor{118, 178, 23, 215};
   const sf::Color yAxisColor{205, 56, 79, 215};
 
-  void buildGrid(sf::Vector2f viewSize, sf::Vector2f viewCenter) {
+  void buildGrid(const sf::View &view) {
     primaryLines.clear();
     secondaryLines.clear();
     axisLines.clear();
@@ -47,74 +52,63 @@ private:
     secondaryLines.setPrimitiveType(sf::PrimitiveType::Lines);
     axisLines.setPrimitiveType(sf::PrimitiveType::Lines);
 
-    // Calculate the visible world bounds
+    const sf::Vector2f viewSize = view.getSize();
+    const sf::Vector2f viewCenter = view.getCenter();
+
     float left = viewCenter.x - (viewSize.x / 2.0F);
     float right = viewCenter.x + (viewSize.x / 2.0F);
     float top = viewCenter.y - (viewSize.y / 2.0F);
     float bottom = viewCenter.y + (viewSize.y / 2.0F);
 
-    // Find the range of grid lines to draw
-    int startX = static_cast<int>(std::floor(left / primaryStep));
-    int endX = static_cast<int>(std::ceil(right / primaryStep));
-    int startY = static_cast<int>(std::floor(top / primaryStep));
-    int endY = static_cast<int>(std::ceil(bottom / primaryStep));
+    if (top > bottom) {
+      std::swap(top, bottom);
+    }
 
-    int secondaryStartX = static_cast<int>(std::floor(left / secondaryStep));
-    int secondaryEndX = static_cast<int>(std::ceil(right / secondaryStep));
-    int secondaryStartY = static_cast<int>(std::floor(top / secondaryStep));
-    int secondaryEndY = static_cast<int>(std::ceil(right / secondaryStep));
+    int startX = static_cast<int>(std::floor(left / secondaryStep));
+    int endX = static_cast<int>(std::ceil(right / secondaryStep));
+    int startY = static_cast<int>(std::floor(top / secondaryStep));
+    int endY = static_cast<int>(std::ceil(bottom / secondaryStep));
 
-    // Draw primary grid lines (vertical)
     for (int i = startX; i <= endX; ++i) {
-      float x = i * primaryStep;
-      if (x != 0.0F) { // Don't draw the main axis here
-        primaryLines.append({{x, top}, primaryColor});
-        primaryLines.append({{x, bottom}, primaryColor});
+      float x = static_cast<float>(i) * secondaryStep;
+      sf::Vertex topVertex({x, top}, secondaryColor);
+      sf::Vertex bottomVertex({x, bottom}, secondaryColor);
+
+      if (i == 0) { // Y-axis
+        topVertex.color = yAxisColor;
+        bottomVertex.color = yAxisColor;
+        axisLines.append(topVertex);
+        axisLines.append(bottomVertex);
+      } else if (i % primaryLineFactor == 0) { // Primary line
+        topVertex.color = primaryColor;
+        bottomVertex.color = primaryColor;
+        primaryLines.append(topVertex);
+        primaryLines.append(bottomVertex);
+      } else { // Secondary line
+        secondaryLines.append(topVertex);
+        secondaryLines.append(bottomVertex);
       }
     }
 
-    // Draw primary grid lines (horizontal)
     for (int i = startY; i <= endY; ++i) {
-      float y = i * primaryStep;
-      if (y != 0.0F) { // Don't draw the main axis here
-        primaryLines.append({{left, y}, primaryColor});
-        primaryLines.append({{right, y}, primaryColor});
+      float y = static_cast<float>(i) * secondaryStep;
+      sf::Vertex leftVertex({left, y}, secondaryColor);
+      sf::Vertex rightVertex({right, y}, secondaryColor);
+
+      if (i == 0) { // X-axis
+        leftVertex.color = xAxisColor;
+        rightVertex.color = xAxisColor;
+        axisLines.append(leftVertex);
+        axisLines.append(rightVertex);
+      } else if (i % primaryLineFactor == 0) { // Primary line
+        leftVertex.color = primaryColor;
+        rightVertex.color = primaryColor;
+        primaryLines.append(leftVertex);
+        primaryLines.append(rightVertex);
+      } else { // Secondary line
+        secondaryLines.append(leftVertex);
+        secondaryLines.append(rightVertex);
       }
-    }
-
-    // Draw secondary grid lines (vertical)
-    for (int i = secondaryStartX; i <= secondaryEndX; ++i) {
-      if (i % 5 != 0) { // Skip lines that coincide with primary lines
-        float x = i * secondaryStep;
-        if (x != 0.0F) { // Don't draw over the main axis
-          secondaryLines.append({{x, top}, secondaryColor});
-          secondaryLines.append({{x, bottom}, secondaryColor});
-        }
-      }
-    }
-
-    // Draw secondary grid lines (horizontal)
-    for (int i = secondaryStartY; i <= secondaryEndY; ++i) {
-      if (i % 5 != 0) { // Skip lines that coincide with primary lines
-        float y = i * secondaryStep;
-        if (y != 0.0F) { // Don't draw over the main axis
-          secondaryLines.append({{left, y}, secondaryColor});
-          secondaryLines.append({{right, y}, secondaryColor});
-        }
-      }
-    }
-
-    // Draw main axes (X and Y axes through origin)
-    // X-axis (horizontal line through y=0)
-    if (top <= 0.0F && bottom >= 0.0F) {
-      axisLines.append({{left, 0.0F}, xAxisColor});
-      axisLines.append({{right, 0.0F}, xAxisColor});
-    }
-
-    // Y-axis (vertical line through x=0)
-    if (left <= 0.0F && right >= 0.0F) {
-      axisLines.append({{0.0F, top}, yAxisColor});
-      axisLines.append({{0.0F, bottom}, yAxisColor});
     }
   }
 };

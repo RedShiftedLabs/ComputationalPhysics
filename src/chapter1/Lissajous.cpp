@@ -1,3 +1,4 @@
+#include "Physics.h"
 #include <Vector2D.h>
 #include <fstream>
 #include <iostream>
@@ -24,8 +25,8 @@ int main() {
     return 1;
   }
 
-  T1 = 2.0 * M_PI / w1;
-  T2 = 2.0 * M_PI / w2;
+  T1 = 2.0 * Physics::constants::PI / w1;
+  T2 = 2.0 * Physics::constants::PI / w2;
 
   std::cout << "w1 = " << w1 << ", w2 = " << w2 << "\n";
   std::cout << "t0 = " << t0 << ", tf = " << tf << ", dt = " << dt << "\n";
@@ -39,7 +40,7 @@ int main() {
   double t = t0;
   while (t <= tf) {
     Position = {R * cos(w1 * t), R * sin(w2 * t)};
-    velocity = {R * w1 * cos(w1 * t), R * w2 * cos(w2 * t)};
+    velocity = {-R * w1 * sin(w1 * t), R * w2 * cos(w2 * t)};
     file << t << " " << Position.x << " " << Position.y << " " << velocity.x
          << " " << velocity.y << "\n";
     t += dt;
