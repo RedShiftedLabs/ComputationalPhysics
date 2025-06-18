@@ -1,11 +1,10 @@
 // src/chapter1/DataVisualizer.cpp
 
+#include <DataLoader.h>
 #include <GridRenderer.h>
 #include <SFML/Graphics.hpp>
 #include <Vector2D.h>
 #include <optional>
-
-#include <DataLoader.h>
 
 int main() {
   DataLoader loader("Circle.dat");
@@ -61,7 +60,7 @@ int main() {
     marker.setPosition(
         {xData[currentIndex] * scale, yData[currentIndex] * scale});
 
-    window.clear(sf::Color{20, 20, 20, 255});
+    window.clear(sf::Color{33, 33, 33, 105});
     gridRenderer.renderGrid(window);
     window.draw(trail);
     window.draw(marker);

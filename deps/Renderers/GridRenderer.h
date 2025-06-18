@@ -34,9 +34,10 @@ private:
 
   const float primaryStep = 100.0F;
   const float secondaryStep = 20.0F;
-  const sf::Color primaryColor{100, 100, 100, 255};
-  const sf::Color secondaryColor{60, 60, 60, 255};
-  const sf::Color axisColor{150, 150, 150, 255}; // Brighter color for main axes
+  const sf::Color primaryColor{100, 100, 100, 205};
+  const sf::Color secondaryColor{60, 60, 60, 155};
+  const sf::Color xAxisColor{118, 178, 23, 215};
+  const sf::Color yAxisColor{205, 56, 79, 215};
 
   void buildGrid(sf::Vector2f viewSize, sf::Vector2f viewCenter) {
     primaryLines.clear();
@@ -106,14 +107,14 @@ private:
     // Draw main axes (X and Y axes through origin)
     // X-axis (horizontal line through y=0)
     if (top <= 0.0F && bottom >= 0.0F) {
-      axisLines.append({{left, 0.0F}, axisColor});
-      axisLines.append({{right, 0.0F}, axisColor});
+      axisLines.append({{left, 0.0F}, xAxisColor});
+      axisLines.append({{right, 0.0F}, xAxisColor});
     }
 
     // Y-axis (vertical line through x=0)
     if (left <= 0.0F && right >= 0.0F) {
-      axisLines.append({{0.0F, top}, axisColor});
-      axisLines.append({{0.0F, bottom}, axisColor});
+      axisLines.append({{0.0F, top}, yAxisColor});
+      axisLines.append({{0.0F, bottom}, yAxisColor});
     }
   }
 };
