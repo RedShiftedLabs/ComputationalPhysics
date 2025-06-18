@@ -30,11 +30,12 @@ function(add_physics_sim name source)
 endfunction()
 
 # Create executables for each simulation
-add_physics_sim(circle circle.cpp)
-add_physics_sim(lissajous Lissajous.cpp)
-add_physics_sim(projectile projectile.cpp)
-add_physics_sim(projectile_air ProjectileAirResistance.cpp)
-add_physics_sim(pendulum SimplePendulum.cpp)
+add_physics_sim(Circle circle.cpp)
+add_physics_sim(Lissajous Lissajous.cpp)
+add_physics_sim(Projectile projectile.cpp)
+add_physics_sim(ProjectileAirResistance ProjectileAirResistance.cpp)
+add_physics_sim(Pendulum SimplePendulum.cpp)
+add_physics_sim(Box1D box1D.cpp)
 
 add_executable(DataVisualizer DataVisualizer.cpp)
 

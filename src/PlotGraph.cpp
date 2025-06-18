@@ -18,21 +18,21 @@ void updateViewOnResize(sf::RenderWindow &window, sf::View &view) {
 void handleEvents(const std::vector<float> &xData,
                   const std::vector<float> &yData, sf::RenderWindow &window,
                   sf::View &view, LineRenderer &lineRenderer,
-                  const float &scale) {
+                  const float &scaleX, const float &scaleY) {
   while (const std::optional<sf::Event> event = window.pollEvent()) {
     if (event->is<sf::Event::Closed>()) {
       window.close();
     } else if (event->is<sf::Event::Resized>()) {
       updateViewOnResize(window, view);
-      lineRenderer.setData(xData, yData, scale, scale);
+      lineRenderer.setData(xData, yData, scaleX, scaleY);
     }
   }
 }
 
 int main() {
-  DataLoader loader("Lissajous.dat");
-  const auto &xData = loader.getColumn("x(t)");
-  const auto &yData = loader.getColumn("y(t)");
+  DataLoader loader("box1D_1.dat");
+  const auto &xData = loader.getColumn("Time(s)");
+  const auto &yData = loader.getColumn("v(t)");
 
   sf::ContextSettings settings;
   settings.antiAliasingLevel = 8;
@@ -47,15 +47,16 @@ int main() {
   GridRenderer gridRenderer;
   LineRenderer lineRenderer;
 
-  const float scale = 120.0F;
+  const float scaleX = 5.0F;
+  const float scaleY = 10.0F;
 
   lineRenderer.setThickness(2.0F);
   lineRenderer.setColor(sf::Color(225, 225, 225, 200));
 
-  lineRenderer.setData(xData, yData, scale, scale);
+  lineRenderer.setData(xData, yData, scaleX, scaleY);
 
   while (window.isOpen()) {
-    handleEvents(xData, yData, window, view, lineRenderer, scale);
+    handleEvents(xData, yData, window, view, lineRenderer, scaleX, scaleY);
 
     window.clear(sf::Color{33, 33, 33, 105});
     gridRenderer.renderGrid(window);
