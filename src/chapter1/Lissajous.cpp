@@ -31,16 +31,17 @@ int main() {
   std::cout << "t0 = " << t0 << ", tf = " << tf << ", dt = " << dt << "\n";
   std::cout << "T1 = " << T1 << ", T2 = " << T2 << "\n";
 
-  std::ofstream myfile(
-      "/Users/redshifted/Documents/Wolfram/PhysicsData/Lissajous.dat");
-  myfile.precision(10);
+  std::ofstream file("Lissajous.dat");
+  file.precision(10);
+
+  file << "Time(s) " << "x(t) " << "y(t) " << "Vx(t) " << "Vy(t)" << '\n';
 
   double t = t0;
   while (t <= tf) {
     Position = {R * cos(w1 * t), R * sin(w2 * t)};
     velocity = {R * w1 * cos(w1 * t), R * w2 * cos(w2 * t)};
-    myfile << t << " " << Position.x << " " << Position.y << " " << velocity.x
-           << " " << velocity.y << "\n";
+    file << t << " " << Position.x << " " << Position.y << " " << velocity.x
+         << " " << velocity.y << "\n";
     t += dt;
   }
 
