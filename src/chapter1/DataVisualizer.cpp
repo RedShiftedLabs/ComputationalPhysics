@@ -11,6 +11,14 @@
 
 float lerp(float a, float b, float t) { return a + (t * (b - a)); }
 
+void updateViewOnResize(sf::RenderWindow &window, sf::View &view) {
+  sf::Vector2u size = window.getSize();
+  float aspectRatio = static_cast<float>(size.x) / static_cast<float>(size.y);
+  view.setSize({600.0F * aspectRatio, -600.0F});
+  view.setCenter({0.0F, 0.0F});
+  window.setView(view);
+}
+
 int main() {
   DataLoader loader("Lissajous.dat");
   const auto &timeData = loader.getColumn("Time(s)");
@@ -25,9 +33,7 @@ int main() {
   window.setFramerateLimit(60);
 
   sf::View view;
-  view.setCenter({0.0F, 0.0F});
-  view.setSize({800.0F, -600.0F});
-  window.setView(view);
+  updateViewOnResize(window, view);
 
   GridRenderer gridRenderer;
   sf::VertexArray trail(sf::PrimitiveType::LineStrip);
@@ -39,52 +45,51 @@ int main() {
   const float scale = 120.0F;
   const float totalTime = timeData.back() - timeData.front();
   size_t currentIndex = 0;
+  float timeOffset = 0.0F;
 
   while (window.isOpen()) {
+    sf::Time frameStart = clock.getElapsedTime();
+
+    // Handle events
     while (const std::optional<sf::Event> event = window.pollEvent()) {
       if (event->is<sf::Event::Closed>()) {
         window.close();
+      } else if (event->is<sf::Event::Resized>()) {
+        updateViewOnResize(window, view);
+        trail.clear();
+        timeOffset += (clock.getElapsedTime() - frameStart).asSeconds();
       }
     }
 
-    // --- TIME CALCULATION ---
-    float elapsed = clock.getElapsedTime().asSeconds();
+    // Calculate current time and position
+    float elapsed = clock.getElapsedTime().asSeconds() - timeOffset;
     float currentTime = timeData[0] + fmod(elapsed, totalTime);
 
-    size_t previousIndex = currentIndex;
-
-    // Binary search (std::upper_bound) to find the current time interval
+    // Find data index using binary search
     auto it = std::upper_bound(timeData.begin(), timeData.end(), currentTime);
-    currentIndex = std::distance(timeData.begin(), it);
-    if (currentIndex > 0) {
-      currentIndex--;
+    size_t newIndex =
+        (it == timeData.begin()) ? 0 : std::distance(timeData.begin(), it) - 1;
+
+    if (newIndex < currentIndex) {
+      trail.clear(); // Loop restart
     }
+    currentIndex = newIndex;
 
-    if (currentIndex < previousIndex) {
-      trail.clear();
-    }
+    // Interpolate position
+    size_t nextIndex = std::min(currentIndex + 1, timeData.size() - 1);
+    float t = (timeData[nextIndex] > timeData[currentIndex])
+                  ? (currentTime - timeData[currentIndex]) /
+                        (timeData[nextIndex] - timeData[currentIndex])
+                  : 0.0F;
 
-    // INTERPOLATION
-    const size_t nextIndex = std::min(currentIndex + 1, timeData.size() - 1);
-    const float time1 = timeData[currentIndex];
-    const float time2 = timeData[nextIndex];
+    float x = lerp(xData[currentIndex], xData[nextIndex], t) * scale;
+    float y = lerp(yData[currentIndex], yData[nextIndex], t) * scale;
 
-    // Calculate interpolation factor 't' (0.0 to 1.0)
-    float t = 0.0F;
-    if (time2 > time1) {
-      t = (currentTime - time1) / (time2 - time1);
-    }
+    // Update graphics
+    trail.append({{x, y}, sf::Color(225, 225, 225, 128)});
+    marker.setPosition({x, y});
 
-    // Interpolate position for smooth animation
-    const float interpolatedX = lerp(xData[currentIndex], xData[nextIndex], t);
-    const float interpolatedY = lerp(yData[currentIndex], yData[nextIndex], t);
-
-    // UPDATE GRAPHICS
-    trail.append({{interpolatedX * scale, interpolatedY * scale},
-                  sf::Color(255, 255, 255, 128)});
-    marker.setPosition({interpolatedX * scale, interpolatedY * scale});
-
-    // RENDERING
+    // Render
     window.clear(sf::Color{33, 33, 33, 105});
     gridRenderer.renderGrid(window);
     window.draw(trail);

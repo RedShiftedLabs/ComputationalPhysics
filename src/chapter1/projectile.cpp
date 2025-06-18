@@ -44,6 +44,8 @@ int main() {
 
   std::ofstream file("Projectile.dat");
 
+  file << "Time(s) " << "x(t) " << "y(t) " << "Vx(t) " << "Vy(t)" << '\n';
+
   t = 0.0;
   while (t <= tf) {
     x = v0x * t;

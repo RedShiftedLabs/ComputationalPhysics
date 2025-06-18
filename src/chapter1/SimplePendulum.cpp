@@ -29,8 +29,10 @@ int main() {
             << " T = " << (2.0 * Physics::constants::PI / omega) << '\n';
 
   // Open file to save data
-  std::ofstream file(
-      "/Users/redshifted/Documents/Wolfram/PhysicsData/SimplePendulum.dat");
+  std::ofstream file("SimplePendulum.dat");
+
+  file << "Time(s) " << "x(t) " << "y(t) " << "Vx(t) " << "Vy(t)" << "theta(𝚯)"
+       << "dθ" << '\n';
 
   // Compute
   for (double t = t0; t <= tf; t += dt) {
