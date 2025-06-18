@@ -5,16 +5,21 @@
 class GridRenderer {
 public:
   void renderGrid(sf::RenderWindow &window) {
-    sf::Vector2f size = static_cast<sf::Vector2f>(window.getSize());
+    sf::View currentView = window.getView();
+    sf::Vector2f viewSize = currentView.getSize();
+    sf::Vector2f viewCenter = currentView.getCenter();
 
-    if (needsUpdate || size != lastSize) {
-      buildGrid(size);
-      lastSize = size;
+    if (needsUpdate || viewSize != lastViewSize ||
+        viewCenter != lastViewCenter) {
+      buildGrid(viewSize, viewCenter);
+      lastViewSize = viewSize;
+      lastViewCenter = viewCenter;
       needsUpdate = false;
     }
 
     window.draw(secondaryLines);
     window.draw(primaryLines);
+    window.draw(axisLines);
   }
 
   void invalidate() { needsUpdate = true; }
@@ -22,70 +27,93 @@ public:
 private:
   sf::VertexArray primaryLines;
   sf::VertexArray secondaryLines;
-  sf::Vector2f lastSize{0, 0};
+  sf::VertexArray axisLines;
+  sf::Vector2f lastViewSize{0, 0};
+  sf::Vector2f lastViewCenter{0, 0};
   bool needsUpdate = true;
 
   const float primaryStep = 100.0F;
-  const float secondaryStep = 20.0F; // primaryStep / 5
+  const float secondaryStep = 20.0F;
   const sf::Color primaryColor{100, 100, 100, 255};
   const sf::Color secondaryColor{60, 60, 60, 255};
+  const sf::Color axisColor{150, 150, 150, 255}; // Brighter color for main axes
 
-  void buildGrid(sf::Vector2f size) {
+  void buildGrid(sf::Vector2f viewSize, sf::Vector2f viewCenter) {
     primaryLines.clear();
     secondaryLines.clear();
+    axisLines.clear();
     primaryLines.setPrimitiveType(sf::PrimitiveType::Lines);
     secondaryLines.setPrimitiveType(sf::PrimitiveType::Lines);
+    axisLines.setPrimitiveType(sf::PrimitiveType::Lines);
 
-    // Pre-calculate counts and reserve space
-    int primaryX = static_cast<int>(size.x / primaryStep) + 1;
-    int primaryY = static_cast<int>(size.y / primaryStep) + 1;
-    int secondaryX = static_cast<int>(size.x / secondaryStep);
-    int secondaryY = static_cast<int>(size.y / secondaryStep);
+    // Calculate the visible world bounds
+    float left = viewCenter.x - (viewSize.x / 2.0F);
+    float right = viewCenter.x + (viewSize.x / 2.0F);
+    float top = viewCenter.y - (viewSize.y / 2.0F);
+    float bottom = viewCenter.y + (viewSize.y / 2.0F);
 
-    primaryLines.resize((primaryX + primaryY) * 2);
-    secondaryLines.resize((secondaryX + secondaryY) * 2);
+    // Find the range of grid lines to draw
+    int startX = static_cast<int>(std::floor(left / primaryStep));
+    int endX = static_cast<int>(std::ceil(right / primaryStep));
+    int startY = static_cast<int>(std::floor(top / primaryStep));
+    int endY = static_cast<int>(std::ceil(bottom / primaryStep));
 
-    size_t primaryIndex = 0;
-    size_t secondaryIndex = 0;
+    int secondaryStartX = static_cast<int>(std::floor(left / secondaryStep));
+    int secondaryEndX = static_cast<int>(std::ceil(right / secondaryStep));
+    int secondaryStartY = static_cast<int>(std::floor(top / secondaryStep));
+    int secondaryEndY = static_cast<int>(std::ceil(right / secondaryStep));
 
-    // Primary vertical lines
-    for (int i = 0; i <= primaryX; ++i) {
+    // Draw primary grid lines (vertical)
+    for (int i = startX; i <= endX; ++i) {
       float x = i * primaryStep;
-      if (x <= size.x) {
-        primaryLines[primaryIndex++] = {{x, 0}, primaryColor};
-        primaryLines[primaryIndex++] = {{x, size.y}, primaryColor};
+      if (x != 0.0F) { // Don't draw the main axis here
+        primaryLines.append({{x, top}, primaryColor});
+        primaryLines.append({{x, bottom}, primaryColor});
       }
     }
 
-    // Primary horizontal lines
-    for (int i = 0; i <= primaryY; ++i) {
+    // Draw primary grid lines (horizontal)
+    for (int i = startY; i <= endY; ++i) {
       float y = i * primaryStep;
-      if (y <= size.y) {
-        primaryLines[primaryIndex++] = {{0, y}, primaryColor};
-        primaryLines[primaryIndex++] = {{size.x, y}, primaryColor};
+      if (y != 0.0F) { // Don't draw the main axis here
+        primaryLines.append({{left, y}, primaryColor});
+        primaryLines.append({{right, y}, primaryColor});
       }
     }
 
-    // Secondary vertical lines (skip multiples of 5)
-    for (int i = 1; i < secondaryX; ++i) {
-      if (i % 5 != 0) {
+    // Draw secondary grid lines (vertical)
+    for (int i = secondaryStartX; i <= secondaryEndX; ++i) {
+      if (i % 5 != 0) { // Skip lines that coincide with primary lines
         float x = i * secondaryStep;
-        secondaryLines[secondaryIndex++] = {{x, 0}, secondaryColor};
-        secondaryLines[secondaryIndex++] = {{x, size.y}, secondaryColor};
+        if (x != 0.0F) { // Don't draw over the main axis
+          secondaryLines.append({{x, top}, secondaryColor});
+          secondaryLines.append({{x, bottom}, secondaryColor});
+        }
       }
     }
 
-    // Secondary horizontal lines (skip multiples of 5)
-    for (int i = 1; i < secondaryY; ++i) {
-      if (i % 5 != 0) {
+    // Draw secondary grid lines (horizontal)
+    for (int i = secondaryStartY; i <= secondaryEndY; ++i) {
+      if (i % 5 != 0) { // Skip lines that coincide with primary lines
         float y = i * secondaryStep;
-        secondaryLines[secondaryIndex++] = {{0, y}, secondaryColor};
-        secondaryLines[secondaryIndex++] = {{size.x, y}, secondaryColor};
+        if (y != 0.0F) { // Don't draw over the main axis
+          secondaryLines.append({{left, y}, secondaryColor});
+          secondaryLines.append({{right, y}, secondaryColor});
+        }
       }
     }
 
-    // Resize to actual used size
-    primaryLines.resize(primaryIndex);
-    secondaryLines.resize(secondaryIndex);
+    // Draw main axes (X and Y axes through origin)
+    // X-axis (horizontal line through y=0)
+    if (top <= 0.0F && bottom >= 0.0F) {
+      axisLines.append({{left, 0.0F}, axisColor});
+      axisLines.append({{right, 0.0F}, axisColor});
+    }
+
+    // Y-axis (vertical line through x=0)
+    if (left <= 0.0F && right >= 0.0F) {
+      axisLines.append({{0.0F, top}, axisColor});
+      axisLines.append({{0.0F, bottom}, axisColor});
+    }
   }
 };

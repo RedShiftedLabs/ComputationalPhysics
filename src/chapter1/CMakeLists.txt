@@ -8,6 +8,7 @@ function(add_physics_sim name source)
     Physics::Physics
     Maths::Maths
     Renderers::Renderers
+    DataLoader::DataLoader
   )
 
   # Add OpenMP if available
@@ -44,6 +45,7 @@ target_link_libraries(DataVisualizer PRIVATE
     Maths::Maths
     Physics::Physics
     Renderers::Renderers
+    DataLoader::DataLoader
 )
 
 set_target_properties(DataVisualizer PROPERTIES
