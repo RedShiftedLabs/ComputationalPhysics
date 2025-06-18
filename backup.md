@@ -79,4 +79,46 @@ int main() {
 
   return 0;
 }
+
+void renderGrid(sf::RenderWindow &window) {
+  sf::VertexArray primaryLines(sf::PrimitiveType::Lines);
+  sf::VertexArray secondaryLines(sf::PrimitiveType::Lines);
+
+  sf::Vector2f size = static_cast<sf::Vector2f>(window.getSize());
+
+  sf::Color primaryGridColor{100, 100, 100, 255};
+  sf::Color secondaryGridColor{60, 60, 60, 255};
+
+  float primaryStep = 100.0F;
+  float secondaryStep = primaryStep / 5.0F;
+
+  auto addLine = [](sf::VertexArray &lines, float x1, float y1, float x2,
+                    float y2, sf::Color color) {
+    lines.append({{x1, y1}, color});
+    lines.append({{x2, y2}, color});
+  };
+
+  // Main Grid
+  for (float x = 0; x <= size.x; x += primaryStep) {
+    addLine(primaryLines, x, 0.0F, x, size.y, primaryGridColor);
+  }
+  for (float y = 0; y <= size.y; y += primaryStep) {
+    addLine(primaryLines, 0.0F, y, size.x, y, primaryGridColor);
+  }
+
+  //   Secondary Grid
+  for (float x = secondaryStep; x <= size.x; x += secondaryStep) {
+    if (i % 5 != 0) {
+      addLine(secondaryLines, x, 0.0F, x, size.y, secondaryGridColor);
+    }
+  }
+  for (float y = secondaryStep; y <= size.y; y += secondaryStep) {
+    if (i % 5 != 0) {
+      addLine(secondaryLines, 0.0F, y, size.x, y, secondaryGridColor);
+    }
+  }
+
+  window.draw(secondaryLines);
+  window.draw(primaryLines);
+}
 ```

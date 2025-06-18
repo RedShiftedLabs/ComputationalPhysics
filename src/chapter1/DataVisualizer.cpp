@@ -1,5 +1,6 @@
 // src/chapter1/DataVisualizer.cpp
 
+#include <GridRenderer.h>
 #include <SFML/Graphics.hpp>
 #include <Vector2D.h>
 #include <fstream>
@@ -63,6 +64,8 @@ int main() {
   sf::RenderWindow window(sf::VideoMode({800U, 600U}), "Data Visualizer");
   window.setFramerateLimit(60);
 
+  GridRenderer gridRenderer;
+
   sf::VertexArray trail(sf::PrimitiveType::LineStrip);
   sf::CircleShape marker(4.F);
   marker.setOrigin({4.0F, 4.0F});
@@ -87,10 +90,12 @@ int main() {
     }
 
     window.clear(sf::Color{20, 20, 20, 255});
+    gridRenderer.renderGrid(window);
     window.draw(trail);
     if (currentPointIndex > 0) {
       window.draw(marker);
     }
+
     window.display();
   }
 
