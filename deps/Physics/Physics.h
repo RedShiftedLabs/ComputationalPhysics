@@ -432,16 +432,12 @@ namespace utils {
 /**
  * @brief Convert degrees to radians
  */
-constexpr double degToRad(double degrees) {
-  return degrees * Const::PI / 180.0;
-}
+constexpr double deg2rad(double degrees) { return degrees * Const::PI / 180.0; }
 
 /**
  * @brief Convert radians to degrees
  */
-constexpr double radToDeg(double radians) {
-  return radians * 180.0 / Const::PI;
-}
+constexpr double rad2deg(double radians) { return radians * 180.0 / Const::PI; }
 
 /**
  * @brief Check if a number is approximately equal to another (useful for

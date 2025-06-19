@@ -37,6 +37,7 @@ add_physics_sim(ProjectileAirResistance ProjectileAirResistance.cpp)
 add_physics_sim(Pendulum SimplePendulum.cpp)
 add_physics_sim(Box1D box1D.cpp)
 add_physics_sim(Box2D box2D.cpp)
+add_physics_sim(MiniGolf MiniGolf.cpp)
 
 add_executable(DataVisualizer DataVisualizer.cpp)
 

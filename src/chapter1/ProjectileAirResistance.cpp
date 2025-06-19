@@ -5,7 +5,7 @@
 // Starts at (0,0), set k, (vO, theta) .
 //--------------------------------------------------------
 
-#include "Physics.h"
+#include <Physics.h>
 #include <Vector2D.h>
 #include <cmath>
 #include <fstream>
@@ -57,7 +57,7 @@ int main() {
     std::exit(1);
   }
 
-  theta = Phy::utils::degToRad(theta);
+  theta = Phy::utils::deg2rad(theta);
   v0x = v0 * std::cos(theta);
   v0y = v0 * std::sin(theta);
 

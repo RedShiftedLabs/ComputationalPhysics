@@ -7,7 +7,10 @@
 #include <optional>
 #include <vector>
 
-float lerp(float a, float b, float t) { return a + (t * (b - a)); }
+inline float lerp(float a, float b, float t) {
+  t = std::clamp(t, 0.0F, 1.0F);
+  return a + (t * (b - a));
+}
 
 void updateViewOnResize(sf::RenderWindow &window, sf::View &view) {
   sf::Vector2u size = window.getSize();
@@ -18,7 +21,7 @@ void updateViewOnResize(sf::RenderWindow &window, sf::View &view) {
 }
 
 int main() {
-  DataLoader loader("Box2D.dat");
+  DataLoader loader("MiniGolf.dat");
   const std::vector<float> &timeData = loader.getColumn("Time(s)");
   const std::vector<float> &xData = loader.getColumn("x(t)");
   const std::vector<float> &yData = loader.getColumn("y(t)");
@@ -60,7 +63,8 @@ int main() {
     float currentTime = timeData[0] + fmod(elapsed, totalTime);
 
     // Find data index using binary search
-    auto it = std::upper_bound(timeData.begin(), timeData.end(), currentTime);
+    std::__wrap_iter<const float *> it =
+        std::upper_bound(timeData.begin(), timeData.end(), currentTime);
     size_t newIndex =
         (it == timeData.begin()) ? 0 : std::distance(timeData.begin(), it) - 1;
 
