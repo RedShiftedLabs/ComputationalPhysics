@@ -24,9 +24,9 @@ int main() {
   std::cout << "t0 = " << t0 << " tf = " << tf << " dt = " << dt << '\n';
 
   // Initialize
-  double omega = std::sqrt(Physics::constants::GRAVITATIONAL_CONSTANT / l);
-  std::cout << "omega = " << omega
-            << " T = " << (2.0 * Physics::constants::PI / omega) << '\n';
+  double omega = std::sqrt(Phy::Const::G / l);
+  std::cout << "omega = " << omega << " T = " << (2.0 * Phy::Const::PI / omega)
+            << '\n';
 
   // Open file to save data
   std::ofstream file("SimplePendulum.dat");

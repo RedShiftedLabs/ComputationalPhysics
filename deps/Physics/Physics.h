@@ -20,7 +20,7 @@
  * - Type-safe physical quantities
  */
 
-namespace Physics {
+namespace Phy {
 
 //=============================================================================
 // PHYSICAL CONSTANTS
@@ -32,7 +32,7 @@ namespace Physics {
  * All constants are defined as constexpr double for compile-time evaluation
  * and follow the 2018 CODATA recommended values.
  */
-namespace constants {
+namespace Const {
 
 // Mathematical constants
 constexpr double PI = 3.14159265358979323846;
@@ -40,14 +40,17 @@ constexpr double E = 2.71828182845904523536;
 constexpr double SQRT_2 = 1.41421356237309504880;
 
 // Universal constants
-constexpr double SPEED_OF_LIGHT = 299792458.0;         // m/s
-constexpr double GRAVITATIONAL_CONSTANT = 6.67430e-11; // m³/(kg·s²)
-constexpr double PLANCK_CONSTANT = 6.62607015e-34;     // J·s
-constexpr double PLANCK_REDUCED = 1.054571817e-34;     // J·s (ℏ)
+constexpr double c = 299792458.0;        // m/s
+constexpr double G = 6.67430e-11;        // m³/(kg·s²)
+constexpr double h = 6.62607015e-34;     // J·s
+constexpr double hbar = 1.054571817e-34; // J·s (ℏ)
+constexpr double k_B = 1.380649e-23;     // J/K
+constexpr double Na = 6.02214076e23;     // mol⁻¹ (Avogadro's number)
+constexpr double R = 8.31446261815324;   // J/(mol·K) (gas constant)
 
 // Electromagnetic constants
 constexpr double ELEMENTARY_CHARGE = 1.602176634e-19;    // C
-constexpr double VACUUM_PERMITTIVITY = 8.8541878128e-12; // F/m
+constexpr double ε = 8.8541878128e-12;                   // F/m
 constexpr double VACUUM_PERMEABILITY = 1.25663706212e-6; // H/m
 constexpr double FINE_STRUCTURE = 7.2973525693e-3;       // dimensionless
 
@@ -70,8 +73,8 @@ constexpr double STEFAN_BOLTZMANN = 5.670374419e-8; // W/(m²·K⁴)
 constexpr double FARADAY_CONSTANT = 96485.33212;    // C/mol
 
 // Earth and astronomical constants
-constexpr double EARTH_GRAVITY = 9.80665;            // m/s²
-constexpr double EARTH_MASS = 5.9722e24;             // kg
+constexpr double g = 9.80665;                        // m/s²
+constexpr double MassEarth = 5.9722e24;              // kg
 constexpr double EARTH_RADIUS = 6.3781e6;            // m
 constexpr double ATMOSPHERIC_PRESSURE = 101325.0;    // Pa
 constexpr double ASTRONOMICAL_UNIT = 1.495978707e11; // m
@@ -80,7 +83,7 @@ constexpr double PARSEC = 3.0856775814671916e16;     // m
 constexpr double SOLAR_MASS = 1.9884e30;             // kg
 constexpr double SOLAR_RADIUS = 6.957e8;             // m
 
-} // namespace constants
+} // namespace Const
 
 //=============================================================================
 // UNIT CONVERSIONS
@@ -127,11 +130,9 @@ constexpr double fahrenheit_to_kelvin(double f) {
 // Energy conversions
 constexpr double joules_to_calories(double j) { return j * 0.239006; }
 constexpr double calories_to_joules(double cal) { return cal / 0.239006; }
-constexpr double joules_to_eV(double j) {
-  return j / constants::ELEMENTARY_CHARGE;
-}
+constexpr double joules_to_eV(double j) { return j / Const::ELEMENTARY_CHARGE; }
 constexpr double eV_to_joules(double ev) {
-  return ev * constants::ELEMENTARY_CHARGE;
+  return ev * Const::ELEMENTARY_CHARGE;
 }
 constexpr double joules_to_kwh(double j) { return j / 3.6e6; }
 constexpr double kwh_to_joules(double kwh) { return kwh * 3.6e6; }
@@ -142,10 +143,10 @@ constexpr double horsepower_to_watts(double hp) { return hp * 745.7; }
 
 // Pressure conversions
 constexpr double pascals_to_atm(double pa) {
-  return pa / constants::ATMOSPHERIC_PRESSURE;
+  return pa / Const::ATMOSPHERIC_PRESSURE;
 }
 constexpr double atm_to_pascals(double atm) {
-  return atm * constants::ATMOSPHERIC_PRESSURE;
+  return atm * Const::ATMOSPHERIC_PRESSURE;
 }
 constexpr double pascals_to_psi(double pa) { return pa * 0.000145038; }
 constexpr double psi_to_pascals(double psi) { return psi / 0.000145038; }
@@ -270,7 +271,7 @@ inline double kinetic_energy(double mass, double velocity) {
  * @return Potential energy in J
  */
 inline double potential_energy(double mass, double height,
-                               double gravity = constants::EARTH_GRAVITY) {
+                               double gravity = Const::g) {
   return mass * gravity * height;
 }
 
@@ -282,8 +283,7 @@ inline double potential_energy(double mass, double height,
  * @return Gravitational force in N
  */
 inline double gravitational_force(double mass1, double mass2, double distance) {
-  return constants::GRAVITATIONAL_CONSTANT * mass1 * mass2 /
-         (distance * distance);
+  return Const::G * mass1 * mass2 / (distance * distance);
 }
 
 /**
@@ -294,8 +294,7 @@ inline double gravitational_force(double mass1, double mass2, double distance) {
  * @return Electric force in N
  */
 inline double electric_force(double charge1, double charge2, double distance) {
-  constexpr double k =
-      1.0 / (4.0 * constants::PI * constants::VACUUM_PERMITTIVITY);
+  constexpr double k = 1.0 / (4.0 * Const::PI * Const::ε);
   return k * charge1 * charge2 / (distance * distance);
 }
 
@@ -333,7 +332,7 @@ inline double power(double work, double time) { return work / time; }
  * @return Escape velocity in m/s
  */
 inline double escape_velocity(double mass, double radius) {
-  return std::sqrt(2.0 * constants::GRAVITATIONAL_CONSTANT * mass / radius);
+  return std::sqrt(2.0 * Const::G * mass / radius);
 }
 
 /**
@@ -343,8 +342,7 @@ inline double escape_velocity(double mass, double radius) {
  * @return Orbital velocity in m/s
  */
 inline double orbital_velocity(double central_mass, double orbital_radius) {
-  return std::sqrt(constants::GRAVITATIONAL_CONSTANT * central_mass /
-                   orbital_radius);
+  return std::sqrt(Const::G * central_mass / orbital_radius);
 }
 
 /**
@@ -354,9 +352,8 @@ inline double orbital_velocity(double central_mass, double orbital_radius) {
  * @return Orbital period in s
  */
 inline double orbital_period(double semi_major_axis, double central_mass) {
-  return 2.0 * constants::PI *
-         std::sqrt(std::pow(semi_major_axis, 3) /
-                   (constants::GRAVITATIONAL_CONSTANT * central_mass));
+  return 2.0 * Const::PI *
+         std::sqrt(std::pow(semi_major_axis, 3) / (Const::G * central_mass));
 }
 
 /**
@@ -365,7 +362,7 @@ inline double orbital_period(double semi_major_axis, double central_mass) {
  * @return Photon energy in J
  */
 inline double photon_energy(double wavelength) {
-  return constants::PLANCK_CONSTANT * constants::SPEED_OF_LIGHT / wavelength;
+  return Const::h * Const::c / wavelength;
 }
 
 /**
@@ -374,7 +371,7 @@ inline double photon_energy(double wavelength) {
  * @return Wavelength in m
  */
 inline double wavelength_from_frequency(double frequency) {
-  return constants::SPEED_OF_LIGHT / frequency;
+  return Const::c / frequency;
 }
 
 /**
@@ -383,7 +380,7 @@ inline double wavelength_from_frequency(double frequency) {
  * @return Lorentz factor (dimensionless)
  */
 inline double lorentz_factor(double velocity) {
-  double beta = velocity / constants::SPEED_OF_LIGHT;
+  double beta = velocity / Const::c;
   return 1.0 / std::sqrt(1.0 - (beta * beta));
 }
 
@@ -393,7 +390,7 @@ inline double lorentz_factor(double velocity) {
  * @return Energy in J
  */
 inline double rest_mass_energy(double mass) {
-  return mass * constants::SPEED_OF_LIGHT * constants::SPEED_OF_LIGHT;
+  return mass * Const::c * Const::c;
 }
 
 /**
@@ -405,7 +402,7 @@ inline double rest_mass_energy(double mass) {
  */
 inline double ideal_gas_pressure(double moles, double temperature,
                                  double volume) {
-  return moles * constants::GAS_CONSTANT * temperature / volume;
+  return moles * Const::R * temperature / volume;
 }
 
 /**
@@ -417,7 +414,7 @@ inline double ideal_gas_pressure(double moles, double temperature,
  */
 inline double blackbody_power(double temperature, double surface_area,
                               double emissivity = 1.0) {
-  return emissivity * constants::STEFAN_BOLTZMANN * surface_area *
+  return emissivity * Const::STEFAN_BOLTZMANN * surface_area *
          std::pow(temperature, 4);
 }
 
@@ -435,15 +432,15 @@ namespace utils {
 /**
  * @brief Convert degrees to radians
  */
-constexpr double deg_to_rad(double degrees) {
-  return degrees * constants::PI / 180.0;
+constexpr double degToRad(double degrees) {
+  return degrees * Const::PI / 180.0;
 }
 
 /**
  * @brief Convert radians to degrees
  */
-constexpr double rad_to_deg(double radians) {
-  return radians * 180.0 / constants::PI;
+constexpr double radToDeg(double radians) {
+  return radians * 180.0 / Const::PI;
 }
 
 /**
@@ -458,7 +455,13 @@ inline bool approximately_equal(double a, double b, double tolerance = 1e-9) {
  * @brief Clamp a value between min and max
  */
 template <typename T> constexpr T clamp(T value, T min_val, T max_val) {
-  return (value < min_val) ? min_val : (value > max_val) ? max_val : value;
+  if (value < min_val) {
+    return min_val;
+  }
+  if (value > max_val) {
+    return max_val;
+  }
+  return value;
 }
 
 /**
@@ -470,4 +473,4 @@ template <typename T> constexpr T lerp(T a, T b, double t) {
 
 } // namespace utils
 
-} // namespace Physics
+} // namespace Phy

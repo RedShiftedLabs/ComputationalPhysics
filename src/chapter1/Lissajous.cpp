@@ -25,8 +25,8 @@ int main() {
     return 1;
   }
 
-  T1 = 2.0 * Physics::constants::PI / w1;
-  T2 = 2.0 * Physics::constants::PI / w2;
+  T1 = 2.0 * Phy::Const::PI / w1;
+  T2 = 2.0 * Phy::Const::PI / w2;
 
   std::cout << "w1 = " << w1 << ", w2 = " << w2 << "\n";
   std::cout << "t0 = " << t0 << ", tf = " << tf << ", dt = " << dt << "\n";

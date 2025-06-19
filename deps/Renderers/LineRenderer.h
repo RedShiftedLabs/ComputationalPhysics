@@ -12,21 +12,21 @@ public:
     m_vertices.setPrimitiveType(sf::PrimitiveType::Triangles);
   }
 
-  void setData(const std::vector<float> &xData, const std::vector<float> &yData,
+  void setData(const std::vector<float> &Data1, const std::vector<float> &Data2,
                float scaleX = 1.0F, float scaleY = 1.0F) {
-    if (xData.size() != yData.size() || xData.size() < 2) {
+    if (Data1.size() != Data2.size() || Data1.size() < 2) {
       m_vertices.clear();
       return;
     }
 
-    size_t segmentCount = xData.size() - 1;
+    size_t segmentCount = Data1.size() - 1;
     m_vertices.resize(segmentCount * 6);
 
     const float halfThickness = m_thickness * 0.5F;
 
     for (size_t i = 0; i < segmentCount; ++i) {
-      sf::Vector2f p1(xData[i] * scaleX, yData[i] * scaleY);
-      sf::Vector2f p2(xData[i + 1] * scaleX, yData[i + 1] * scaleY);
+      sf::Vector2f p1(Data1[i] * scaleX, Data2[i] * scaleY);
+      sf::Vector2f p2(Data1[i + 1] * scaleX, Data2[i + 1] * scaleY);
 
       createSegment(p1, p2, i * 6);
     }

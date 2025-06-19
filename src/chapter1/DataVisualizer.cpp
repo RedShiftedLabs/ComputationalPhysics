@@ -1,5 +1,3 @@
-// src/chapter1/DataVisualizer.cpp
-
 #include <DataLoader.h>
 #include <GridRenderer.h>
 #include <SFML/Graphics.hpp>
@@ -20,10 +18,10 @@ void updateViewOnResize(sf::RenderWindow &window, sf::View &view) {
 }
 
 int main() {
-  DataLoader loader("Lissajous.dat");
-  const auto &timeData = loader.getColumn("Time(s)");
-  const auto &xData = loader.getColumn("x(t)");
-  const auto &yData = loader.getColumn("y(t)");
+  DataLoader loader("Box2D.dat");
+  const std::vector<float> &timeData = loader.getColumn("Time(s)");
+  const std::vector<float> &xData = loader.getColumn("x(t)");
+  const std::vector<float> &yData = loader.getColumn("y(t)");
 
   if (timeData.empty()) {
     return 1;
@@ -42,14 +40,11 @@ int main() {
   marker.setFillColor(sf::Color::Red);
 
   sf::Clock clock;
-  const float scale = 120.0F;
+  const float simulationScale = 35.0F;
   const float totalTime = timeData.back() - timeData.front();
   size_t currentIndex = 0;
-  float timeOffset = 0.0F;
 
   while (window.isOpen()) {
-    sf::Time frameStart = clock.getElapsedTime();
-
     // Handle events
     while (const std::optional<sf::Event> event = window.pollEvent()) {
       if (event->is<sf::Event::Closed>()) {
@@ -57,12 +52,11 @@ int main() {
       } else if (event->is<sf::Event::Resized>()) {
         updateViewOnResize(window, view);
         trail.clear();
-        timeOffset += (clock.getElapsedTime() - frameStart).asSeconds();
       }
     }
 
     // Calculate current time and position
-    float elapsed = clock.getElapsedTime().asSeconds() - timeOffset;
+    float elapsed = clock.getElapsedTime().asSeconds();
     float currentTime = timeData[0] + fmod(elapsed, totalTime);
 
     // Find data index using binary search
@@ -71,7 +65,7 @@ int main() {
         (it == timeData.begin()) ? 0 : std::distance(timeData.begin(), it) - 1;
 
     if (newIndex < currentIndex) {
-      trail.clear(); // Loop restart
+      trail.clear();
     }
     currentIndex = newIndex;
 
@@ -82,8 +76,8 @@ int main() {
                         (timeData[nextIndex] - timeData[currentIndex])
                   : 0.0F;
 
-    float x = lerp(xData[currentIndex], xData[nextIndex], t) * scale;
-    float y = lerp(yData[currentIndex], yData[nextIndex], t) * scale;
+    float x = lerp(xData[currentIndex], xData[nextIndex], t) * simulationScale;
+    float y = lerp(yData[currentIndex], yData[nextIndex], t) * simulationScale;
 
     // Update graphics
     trail.append({{x, y}, sf::Color(225, 225, 225, 128)});

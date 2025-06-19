@@ -44,8 +44,7 @@ int main() {
     return 1;
   }
 
-  std::cout << "Time period T = " << (2.0 * Physics::constants::PI / omega)
-            << '\n';
+  std::cout << "Time period T = " << (2.0 * Phy::Const::PI / omega) << '\n';
 
   // Open file to store results
   std::ofstream file("Circle.dat");
